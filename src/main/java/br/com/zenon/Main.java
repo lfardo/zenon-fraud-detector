@@ -21,7 +21,7 @@ public class Main {
 
         Transaction transaction2 = new Transaction(743,
                 TransactionType.CASH_OUT,
-                new BigDecimal(850002.52),
+                new BigDecimal("850002.52"),
                 new TransactionCustomer("C1280323807",new BigDecimal("850002.52"),new BigDecimal("0.00")),
                 new TransactionCustomer("C873221189",new BigDecimal("6510099.11"),new BigDecimal( "7360101.63")),
                 true,
@@ -30,16 +30,25 @@ public class Main {
         IO.println(transaction);
         IO.println(transaction2);
 
+        IO.println("--------------------------------------------------------");
+
+        TransactionIngestor transactionIngestor = new TransactionIngestor();
+        List<Transaction> transactions = transactionIngestor.read("data/PS_20174392719_1491204439457_log.csv");
+
+        transactions.stream().limit(10).forEach(IO::println);
+
+
+        /*
         Path filePath = Paths.get("data", "PS_20174392719_1491204439457_log.csv");
         IO.println(filePath.toString());
         IO.println(Path.of("data/PS_20174392719_1491204439457_log.csv"));
 
-        TransactionIngestor transactionIngestor = new TransactionIngestor();
+
         List<Transaction> lista = transactionIngestor.processFile(Path.of(filePath.toUri()));
         int i = 1;
         for (Transaction transactionAux : lista) {
             IO.println(transactionAux);
             if(i++ >= 10) break;
-        }
+        }*/
     }
 }

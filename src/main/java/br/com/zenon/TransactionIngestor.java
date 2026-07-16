@@ -2,18 +2,64 @@ package br.com.zenon;
 
 import java.io.*;
 import java.math.BigDecimal;
-import java.nio.ByteBuffer;
-import java.nio.channels.Channel;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
 public class TransactionIngestor {
 
+    public List<Transaction> read(String filename) {
+        Path path = Path.of(filename);
+        try {
+            List<String> lines = Files.readAllLines(path);
+            return lines.stream()
+                    .skip(1)
+                    .limit(1000)
+                    .map(this::parseTransaction)
+                    .toList();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public List<Transaction> readOld(String filename) {
+        List<Transaction> transactions = new ArrayList<>();
+        try(FileInputStream fis =  new FileInputStream(filename);
+                Scanner scanner =  new Scanner(fis)) {
+
+            int lineCount = 0;
+            while(scanner.hasNextLine() && lineCount++ <= 1000) {
+                String line = scanner.nextLine();
+                if(lineCount == 1) continue;
+                Transaction transaction = parseTransaction(line);
+                transactions.add(transaction);
+            }
+            return transactions;
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private Transaction parseTransaction(String line) {
+        String[] chunks = line.split(",");
+        int step = Integer.parseInt(chunks[0]);
+        TransactionType type = TransactionType.valueOf(chunks[1]);
+        BigDecimal amount = new BigDecimal(chunks[2]);
+
+        TransactionCustomer origin = new TransactionCustomer(chunks[3], new BigDecimal(chunks[4]), new BigDecimal(chunks[5]));
+        TransactionCustomer recipient = new TransactionCustomer(chunks[6], new BigDecimal(chunks[7]), new BigDecimal(chunks[8]));
+        boolean isFraud = "1".equals(chunks[9]);
+        boolean isFlaggedFraud =  "1".equals(chunks[10]);
+
+        return new Transaction(step, type, amount, origin, recipient, isFraud, isFlaggedFraud);
+    }
 
     public List<Transaction> processFile(Path path) throws IOException {
 
@@ -32,7 +78,6 @@ public class TransactionIngestor {
             }
 
         }
-
         return listTransactions;
     }
 
