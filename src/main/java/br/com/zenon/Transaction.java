@@ -1,9 +1,20 @@
 package br.com.zenon;
 
 import java.math.BigDecimal;
+import java.util.Objects;
 
 public record Transaction(int step, TransactionType type, BigDecimal amount, TransactionCustomer origin,
                           TransactionCustomer recipient, boolean isFraud, boolean isFlaggedFraud) {
 
+    public Transaction {
+        Objects.requireNonNull(type);
+        Objects.requireNonNull(amount);
+        Objects.requireNonNull(origin);
+        Objects.requireNonNull(recipient);
+        Objects.requireNonNull(recipient);
 
+
+        if (step <= 0) throw new IllegalArgumentException("Valor de step deve ser maior que zero: " + step);
+        if (amount.signum() < 0) throw new IllegalArgumentException("Valor de amount não deve ser negativo: " + amount);
+    }
 }
