@@ -5,12 +5,15 @@ import java.math.BigDecimal;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Map;
+
+import static java.lang.IO.println;
 
 //TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
 // click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
 public class Main {
     static void main() throws IOException {
-
+/*
         Transaction transaction = new Transaction(1,
                 TransactionType.PAYMENT,
                 new BigDecimal("9839.64"),
@@ -55,5 +58,28 @@ public class Main {
             IO.println(transactionAux);
             if(i++ >= 10) break;
         }*/
+
+
+        TransactionIngestor transactionIngestor = new TransactionIngestor();
+        List<Transaction> transactions = transactionIngestor.read("data/PS_20174392719_1491204439457_log.csv");
+
+        FraudAnalyzer fraudAnalyzer = new FraudAnalyzer(transactions);
+        long countFrauds = fraudAnalyzer.countFrauds();
+        println("1. Total de Fraudes: " +  countFrauds);
+
+        List<BigDecimal> highestFrauds = fraudAnalyzer.findHighestValueFraudsAmounts(3);
+        println("2. Top 3 Fraudes de maior valor:");
+        highestFrauds.stream().forEach(amount -> println(String.format("%.2f", amount)));
+
+        List<String> suspiciousClients = fraudAnalyzer.findTopSuspiciousClients(5);
+        println("3. Clientes Suspeitos:");
+        suspiciousClients.forEach(IO::println);
+
+        BigDecimal totalFraudLoss = fraudAnalyzer.calculateTotalFraudLoss();
+        println("4. Prejuizo Total: " + totalFraudLoss);
+
+        Map<TransactionType, Long> fraudsCountByType = fraudAnalyzer.countFraudsByType();
+        println("5. Fraudes por Tipo: ");
+        fraudsCountByType.forEach((tipo, qtd) -> println(" - %s: %d".formatted(tipo, qtd)));
     }
 }

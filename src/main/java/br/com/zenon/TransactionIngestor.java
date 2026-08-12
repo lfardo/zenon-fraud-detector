@@ -8,12 +8,14 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Scanner;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static java.lang.IO.println;
 
 public class TransactionIngestor {
+
+    private static final long FRAUD_LIMIT = 50_000;
 
     public List<Transaction> read(String filename) {
         Path path = Path.of(filename);
@@ -21,7 +23,7 @@ public class TransactionIngestor {
             List<String> lines = Files.readAllLines(path);
             return lines.stream()
                     .skip(1)
-                    .limit(1000)
+                    .limit(FRAUD_LIMIT)
                     .map(this::parseTransaction)
                     .filter(Optional::isPresent)
                     .map(Optional::get)
@@ -29,6 +31,35 @@ public class TransactionIngestor {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public void countFrouds(String filename) {
+        List<Transaction> list = read(filename);
+
+        List<Transaction> listFrouds = list.stream().filter(t -> t.isFraud()).toList();
+
+        println("1. Total de Fraudes: " +  listFrouds.stream().count());
+        println("2. Top 3 Fraudes de maior valor:");
+        listFrouds.stream()
+                .sorted(Comparator.comparing(Transaction::amount).reversed())
+                .limit(3)
+                .map(Transaction::amount)
+                .forEach(v -> IO.println(String.format("%.2f", v)));
+        println("3. Clientes Suspeitos:");
+        listFrouds.stream()
+                .sorted(Comparator.comparing(Transaction::amount).reversed())
+                .distinct()
+                .limit(5)
+                .map(Transaction::origin)
+                .map(TransactionCustomer::name)
+                .forEach(IO::println);
+        println("4. Prejuizo Total: " + listFrouds.stream().map(Transaction::amount).reduce(BigDecimal.ZERO, BigDecimal::add));
+        println("5. Fraudes por Tipo: ");
+        listFrouds.stream()
+                .map(Transaction::type)
+                .filter(Objects::nonNull)
+                .collect(Collectors.groupingBy(t -> t, Collectors.counting()))
+                .forEach((tipo, qtd) -> println(String.format(" - %s: %d", tipo, qtd)));
     }
 
     public List<Transaction> readOld(String filename) {
