@@ -1,11 +1,8 @@
 package br.com.zenon;
 
 import java.io.IOException;
-import java.math.BigDecimal;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
-import java.util.Map;
+import java.util.Optional;
 
 import static java.lang.IO.println;
 
@@ -59,7 +56,7 @@ public class Main {
             if(i++ >= 10) break;
         }*/
 
-
+/*
         TransactionIngestor transactionIngestor = new TransactionIngestor();
         List<Transaction> transactions = transactionIngestor.read("data/PS_20174392719_1491204439457_log.csv");
 
@@ -81,5 +78,39 @@ public class Main {
         Map<TransactionType, Long> fraudsCountByType = fraudAnalyzer.countFraudsByType();
         println("5. Fraudes por Tipo: ");
         fraudsCountByType.forEach((tipo, qtd) -> println(" - %s: %d".formatted(tipo, qtd)));
+        
+ */
+
+        TransactionIngestor transactionIngestor = new TransactionIngestor();
+        List<Transaction> transactions = transactionIngestor.read("data/PS_20174392719_1491204439457_log.csv");
+        
+        TransactionRepository transactionRepository = new TransactionListRepository(transactions);
+
+        transactionRepository.findByOriginName("C12345")
+                .ifPresentOrElse(IO::println, () -> IO.println("Transacao nao encontrada"));
+
+        transactionRepository.findByOriginName("C1231006815")
+                .ifPresentOrElse(IO::println, () -> IO.println("Transacao nao encontrada"));
+
+
+        long start = System.nanoTime();
+        Optional<Transaction> listTransaction3 = transactionRepository.findByOriginName("C1868032458");
+        IO.println(listTransaction3);
+        System.out.println("Tempo da Lista: " + (System.nanoTime() - start)/1_000_000.0 + "ms");
+
+
+         transactionRepository = new TransactionMapRepository(transactions);
+
+        transactionRepository.findByOriginName("C12345")
+                .ifPresentOrElse(IO::println, () -> IO.println("Transacao nao encontrada"));
+
+        transactionRepository.findByOriginName("C1231006815")
+                .ifPresentOrElse(IO::println, () -> IO.println("Transacao nao encontrada"));
+
+
+        start = System.nanoTime();
+        Optional<Transaction> listTransaction4 = transactionRepository.findByOriginName("C1868032458");
+        IO.println(listTransaction4);
+        System.out.println("Tempo do Map: " + (System.nanoTime() - start)/1_000_000.0 + "ms");
     }
 }
