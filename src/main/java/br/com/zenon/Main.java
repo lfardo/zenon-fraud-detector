@@ -3,6 +3,7 @@ package br.com.zenon;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import static java.lang.IO.println;
 
@@ -80,7 +81,7 @@ public class Main {
         fraudsCountByType.forEach((tipo, qtd) -> println(" - %s: %d".formatted(tipo, qtd)));
         
  */
-
+/*
         TransactionIngestor transactionIngestor = new TransactionIngestor();
         List<Transaction> transactions = transactionIngestor.read("data/PS_20174392719_1491204439457_log.csv");
         
@@ -112,5 +113,11 @@ public class Main {
         Optional<Transaction> listTransaction4 = transactionRepository.findByOriginName("C1868032458");
         IO.println(listTransaction4);
         System.out.println("Tempo do Map: " + (System.nanoTime() - start)/1_000_000.0 + "ms");
+
+        */
+
+
+
+
     }
 }
